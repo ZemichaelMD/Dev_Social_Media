@@ -4,6 +4,10 @@ const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+//load validator
+const validateRegisterInput = require('../../validation/register');
+const validateLoginInput = require('../../validation/login');
+
 //load user model
 const User = require('../../models/Users');
 const keys = require('../../config/keys');
@@ -18,9 +22,16 @@ router.get('/test', (req, res) => res.json({ msg: 'Users Works' }));
 // @desc     register Users
 // @access   Public
 router.post('/register', (req, res) => {
+  const { errors, isValid } = validateRegisterInput(req.body);
+
+  //check Validation
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
   User.findOne({ email: req.body.email }).then((user) => {
     if (user) {
-      return res.status(400).json({ email: 'Email already existes' });
+      return res.status(400).json({ email: 'Email already exist' });
     } else {
       const avatar = gravatar.url(req.body.email, {
         s: '200',
@@ -52,6 +63,13 @@ router.post('/register', (req, res) => {
 // @desc     Login user / Return JWT Token
 // @access   Public
 router.post('/login', (req, res) => {
+  const { errors, isValid } = validateLoginInput(req.body);
+
+  //check Validation
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
   const email = req.body.email;
   const password = req.body.password;
 
@@ -59,7 +77,8 @@ router.post('/login', (req, res) => {
   User.findOne({ email }).then((user) => {
     // check for user
     if (!user) {
-      return res.status(404).json({ email: 'User Not Found' });
+      errors.email = 'User not Found';
+      return res.status(404).json(errors);
     }
     //Check Password
     bcrypt.compare(password, user.password).then((isMatch) => {
@@ -79,14 +98,15 @@ router.post('/login', (req, res) => {
           }
         );
       } else {
-        return res.status(400).json({ password: 'Wrong Password' });
+        errors.password = 'password incorrect';
+        return res.status(400).json(errors);
       }
     });
   });
 });
 
 // @route    GET api/users/current
-// @desc     Get current loged in user
+// @desc     Get current logged in user
 // @access   Private
 router.get(
   '/current',
