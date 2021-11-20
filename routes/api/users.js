@@ -13,11 +13,7 @@ const User = require('../../models/Users');
 const keys = require('../../config/keys');
 const passport = require('passport');
 
-// @route    GET api/posts/test
-// @desc     Test Profile route
-// @access   Public
-router.get('/test', (req, res) => res.json({ msg: 'Users Works' }));
-
+//*****************
 // @route    GET api/users/register
 // @desc     register Users
 // @access   Public
@@ -59,6 +55,7 @@ router.post('/register', (req, res) => {
   });
 });
 
+//*****************
 // @route    GET api/users/login
 // @desc     Login user / Return JWT Token
 // @access   Public
@@ -89,7 +86,7 @@ router.post('/login', (req, res) => {
         jwt.sign(
           payload,
           keys.secretOrKey,
-          { expiresIn: 360000 },
+          { expiresIn: 3600 },
           (err, token) => {
             res.json({
               success: true,
@@ -105,6 +102,7 @@ router.post('/login', (req, res) => {
   });
 });
 
+//*****************
 // @route    GET api/users/current
 // @desc     Get current logged in user
 // @access   Private
